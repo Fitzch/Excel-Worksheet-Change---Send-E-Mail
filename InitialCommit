@@ -1,0 +1,112 @@
+' This Sub listens for changes to specific values in Columns L and H. If those values are true, then it calls
+' another sub that generates an e-mail.
+Private Sub Worksheet_Change(ByVal Target As Range)
+    On Error Resume Next
+    If Target.Cells.Count > 1 Then Exit Sub
+    
+    ' Checks if cells in Column L are equal to "Yes"
+    If Target.Column = 12 And Target.Value = "Yes" Then
+        ' If true, call the sub that generates the e-mail to send to Andrea informing her that the study is ready to be re-built
+        Call Mail_small_Text_Outlook_Ready_To_Resubmit
+    End If
+    
+    ' Checks if cells in Column H are equal to the current date
+    If Target.Column = 8 And Target.Value = Date Then
+        ' If true, call the sub that generates the e-mail to send to Nate informing him of the issue
+        Call Mail_small_Text_Outlook_Needs_Attention
+    End If
+End Sub
+'This Sub generates the e-mail to send to Andrea informing her that the study is ready to be re-submitted
+Sub Mail_small_Text_Outlook_Ready_To_Resubmit()
+    Dim xOutApp As Object
+    Dim xOutMail As Object
+    Dim xMailBody As String
+    Dim projectInfo As String
+    Dim subjectLine As String
+    Dim spreadsheetAddress As String
+    Set xOutApp = CreateObject("Outlook.Application")
+    Set xOutMail = xOutApp.CreateItem(0)
+        
+    ' String for e-mail body with info for study ready to be rebuilt.
+    ' The columnOffset values are the cells to the left
+    projectInfo = "Time Period: " & ActiveCell.Offset(columnOffset:=-11).Value & vbNewLine & "Master: " & _
+        ActiveCell.Offset(columnOffset:=-10).Value & vbNewLine & "Child: " & ActiveCell.Offset(columnOffset:=-9).Value
+    
+    ' String for subject line. Should include Hospital Name and Time Period
+    subjectLine = ActiveCell.Offset(columnOffset:=-8).Value & " is Ready to be Re-Built for Submission Period " & _
+        ActiveCell.Offset(columnOffset:=-11)
+        
+    ' Address to tracking spreadsheet for easy updating
+    spreadsheetAddress = "<File:" & Application.ActiveWorkbook.FullName & ">"
+    
+    ' Address to open XMeL Application for convenience
+    applicationAddress = "<File:\\filepath>"
+    
+    ' Body of the e-mail giving details about study and handy links
+    xMailBody = "Hello," & vbNewLine & vbNewLine & _
+              "The following study is ready to be re-built and re-submitted:" & vbNewLine & vbNewLine & _
+              projectInfo & vbNewLine & vbNewLine & _
+              "Research Comment: " & ActiveCell.Offset(columnOffset:=-3).Value & vbNewLine & vbNewLine & _
+              "Open Program: " & applicationAddress & vbNewLine & vbNewLine & _
+              "Update after re-submitting: " & spreadsheetAddress
+    On Error Resume Next
+    With xOutMail
+        .To = "xxx@xxx.com;"
+        .CC = ""
+        .BCC = ""
+        .Subject = subjectLine
+        .Body = xMailBody
+        .Display   'or use .Send. Using .Display in case of accidental data entry.
+    End With
+    On Error GoTo 0
+    Set xOutMail = Nothing
+    Set xOutApp = Nothing
+End Sub
+
+Sub Mail_small_Text_Outlook_Needs_Attention()
+    Dim xOutApp As Object
+    Dim xOutMail As Object
+    Dim xMailBody As String
+    Dim projectInfo As String
+    Dim subjectLine As String
+    Dim spreadsheetAddress As String
+    Set xOutApp = CreateObject("Outlook.Application")
+    Set xOutMail = xOutApp.CreateItem(0)
+        
+    ' String for e-mail body with info for study that needs attention.
+    ' The columnOffset values are the cells to the left
+    projectInfo = "Time Period: " & ActiveCell.Offset(columnOffset:=-8).Value & vbNewLine & "Master: " & _
+        ActiveCell.Offset(columnOffset:=-7).Value & vbNewLine & "Child: " & ActiveCell.Offset(columnOffset:=-6).Value
+    
+    ' String for subject line. Should include Hospital Name and Time Period
+    subjectLine = ActiveCell.Offset(columnOffset:=-5).Value & " Needs Some Attention for Submission Period " & _
+        ActiveCell.Offset(columnOffset:=-8)
+        
+    ' Address to tracking spreadsheet for easy updating
+    spreadsheetAddress = "<File:" & Application.ActiveWorkbook.FullName & ">"
+    
+    ' Address to open Application for convenience
+    applicationAddress = "<File:\\filepath>"
+    
+    ' Body of the e-mail giving details about study, the issue that needs to be addressed, and handy links
+    xMailBody = "Hello," & vbNewLine & vbNewLine & _
+              "The following study needs some attention:" & vbNewLine & vbNewLine & _
+              projectInfo & vbNewLine & vbNewLine & _
+              "Reason: " & ActiveCell.Offset(columnOffset:=-2).Value & vbNewLine & vbNewLine & _
+              "Open Application: " & applicationAddress & vbNewLine & vbNewLine & _
+              "Update after re-submitting: " & spreadsheetAddress
+              
+    On Error Resume Next
+    With xOutMail
+        .To = "xxx@xxx.com;"
+        .CC = ""
+        .BCC = ""
+        .Subject = subjectLine
+        .Body = xMailBody
+        .Display   'or use .Send. Using .Display in case of accidental data entry.
+    End With
+    On Error GoTo 0
+    Set xOutMail = Nothing
+    Set xOutApp = Nothing
+End Sub
+
